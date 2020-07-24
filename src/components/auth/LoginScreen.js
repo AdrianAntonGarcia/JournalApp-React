@@ -1,14 +1,48 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useForm } from '../../hooks/useForm';
+import { useDispatch } from 'react-redux';
+import { login } from '../../actions/auth';
 
 export const LoginScreen = () => {
+  // Nos permite lanzar acciones en cualquier lugar de la aplicación
+  const dispatch = useDispatch();
+
+  const [formValues, handleInputChange] = useForm({
+    email: 'adrtler@gmail.com',
+    password: '123456',
+  });
+
+  const { email, password } = formValues;
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    dispatch(login(12345, 'adrian'));
+  };
   return (
     <>
       <h3 className="auth__title">Login</h3>
-      <form>
-        <input type="text" placeholder="Email" name="email" className="auth__input" autoComplete="off"/>
-        <input type="password" placeholder="Password" name="password" className="auth__input"/>
-        <button type="submit" className="btn btn-primary btn-block">Login</button>
+      <form onSubmit={handleLogin}>
+        <input
+          type="text"
+          placeholder="Email"
+          name="email"
+          className="auth__input"
+          autoComplete="off"
+          value={email}
+          onChange={handleInputChange}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          name="password"
+          className="auth__input"
+          value={password}
+          onChange={handleInputChange}
+        />
+        <button type="submit" className="btn btn-primary btn-block">
+          Login
+        </button>
         <div className="auth__social-networks">
           <p>Login with social networks</p>
           <div className="google-btn">
