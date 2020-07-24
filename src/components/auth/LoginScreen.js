@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useForm } from '../../hooks/useForm';
 import { useDispatch } from 'react-redux';
-import { login } from '../../actions/auth';
+import { startLoginEmailPassword } from '../../actions/auth';
 
 export const LoginScreen = () => {
   // Nos permite lanzar acciones en cualquier lugar de la aplicación
@@ -17,7 +17,7 @@ export const LoginScreen = () => {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    dispatch(login(12345, 'adrian'));
+    dispatch(startLoginEmailPassword(email, password));
   };
   return (
     <>
