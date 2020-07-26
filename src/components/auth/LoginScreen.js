@@ -1,12 +1,20 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useForm } from '../../hooks/useForm';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { startLoginEmailPassword, startGoogleLogin } from '../../actions/auth';
+import validator from 'validator';
+import { setError, removeError } from '../../actions/ui';
 
 export const LoginScreen = () => {
   // Nos permite lanzar acciones en cualquier lugar de la aplicación
   const dispatch = useDispatch();
+
+  const state = useSelector((state) => {
+    return state.ui;
+  });
+  const msgError = state.msgError;
+  const loading = state.loading;
 
   const [formValues, handleInputChange] = useForm({
     email: 'adrtler@gmail.com',
@@ -17,15 +25,31 @@ export const LoginScreen = () => {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    dispatch(startLoginEmailPassword(email, password));
+    if (isFormValid()) {
+      dispatch(startLoginEmailPassword(email, password));
+    }
   };
 
   const handleGoogleLogin = () => {
     dispatch(startGoogleLogin());
   };
+
+  const isFormValid = () => {
+    console.log(email);
+    if (!validator.isEmail(email)) {
+      dispatch(setError('Email is not valid'));
+      return false;
+    } else if (password.length < 6) {
+      dispatch(setError('Password should be at least 6 character'));
+      return false;
+    }
+    dispatch(removeError());
+    return true;
+  };
   return (
     <>
       <h3 className="auth__title">Login</h3>
+      {msgError && <div className="auth__alert-error">{msgError}</div>}
       <form onSubmit={handleLogin}>
         <input
           type="text"
@@ -44,7 +68,11 @@ export const LoginScreen = () => {
           value={password}
           onChange={handleInputChange}
         />
-        <button type="submit" className="btn btn-primary btn-block">
+        <button
+          type="submit"
+          className="btn btn-primary btn-block"
+          disabled={loading}
+        >
           Login
         </button>
         <div className="auth__social-networks">
