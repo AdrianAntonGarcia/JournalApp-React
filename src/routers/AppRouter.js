@@ -7,8 +7,7 @@ import { useDispatch } from 'react-redux';
 import { login } from '../actions/auth';
 import { PublicRoute } from './PublicRoute';
 import { PrivateRoute } from './PrivateRoute';
-import { loadNotes } from '../helpers/loadNotes';
-import { setNotes } from '../actions/notes';
+import { startLoadingNotes } from '../actions/notes';
 
 export const AppRouter = () => {
   const dispatch = useDispatch();
@@ -31,8 +30,7 @@ export const AppRouter = () => {
          * estar pendiente de cuándo cambie con el useEffect y
          * crargar las notas ahí
          */
-        const notes = await loadNotes(user.uid);
-        dispatch(setNotes(notes));
+        dispatch(startLoadingNotes(user.uid));
       } else {
         setIsLoggedIn(false);
       }
