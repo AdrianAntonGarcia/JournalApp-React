@@ -2,6 +2,11 @@ import { db } from '../firebase/firebase-config';
 
 import { types } from '../types/types';
 import { loadNotes } from '../helpers/loadNotes';
+import Swal from 'sweetalert2';
+import { wait } from '@testing-library/react';
+import { fileUpload } from '../helpers/fileUpload';
+
+//react-journal
 
 export const startNewNote = () => {
   return async (dispatch, getState) => {
@@ -36,3 +41,62 @@ export const setNotes = (notes) => ({
   type: types.notesLoad,
   payload: [...notes],
 });
+
+export const startSaveNote = (note) => {
+  return async (dispatch, getState) => {
+    const { uid } = getState().auth;
+
+    /**
+     * Si la url viene undfined, no vamos a poder grabar en
+     * la base de datos porque no los acepta
+     */
+    if (!note.url) {
+      delete note.url;
+    }
+    const noteToFirestore = { ...note };
+    // El id no lo vamos a guardar en la nota de firestore, ya es el identificador del nodo
+    delete noteToFirestore.id;
+
+    try {
+      await db.doc(`${uid}/journal/notes/${note.id}`).update(noteToFirestore);
+    } catch (err) {
+      Swal.fire('Error', 'Error en el guardado en firebase', 'error');
+      return;
+    }
+    /**
+     * Actualizamos solo la nota que hemos modificado
+     */
+    dispatch(refreshNote(note.id, noteToFirestore));
+    Swal.fire('Saved', note.title, 'success');
+  };
+};
+
+export const refreshNote = (id, note) => ({
+  type: types.notesUpdated,
+  payload: {
+    id,
+    note: {
+      id,
+      ...note,
+    },
+  },
+});
+
+export const startUploading = (file) => {
+  return async (dispatch, getState) => {
+    const { active: activeNote } = getState().notes;
+    Swal.fire({
+      title: 'Uploading...',
+      text: 'Please wait...',
+      allowOutsideClick: false,
+      onBeforeOpen: () => {
+        Swal.showLoading();
+      },
+    });
+    const fileUrl = await fileUpload(file);
+    activeNote.url = fileUrl;
+  
+    dispatch(startSaveNote(activeNote));
+    Swal.close();
+  };
+};

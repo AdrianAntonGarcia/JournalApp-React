@@ -1,13 +1,16 @@
 import React, { useEffect, useRef } from 'react';
 import { NotesAppBar } from './NotesAppBar';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useForm } from '../../hooks/useForm';
+import { activeNote } from '../../actions/notes';
 
 export const NoteScreen = () => {
+  const dispatch = useDispatch();
   const { active: note } = useSelector((state) => state.notes);
   /**
    * Una vez establecemos el estado en el useState, el estado hay que cambiarlo
-   * con el handleInputChange, no se va a redefinir porque lo llamemos otra vez
+   * con el handleInputChange, no se va a redefinir porque lo llamemos otra vez.
+   * No podemos mutar el estado de forma directa!!!!
    */
   const [formValues, handleInputChange, reset] = useForm(note);
   const { body, title } = formValues;
@@ -25,10 +28,15 @@ export const NoteScreen = () => {
   // console.log(activeId);
   useEffect(() => {
     if (note.id !== activeId.current) {
+      // Cambio de la nota por que el usuario ha clicado otra
       reset(note);
       activeId.current = note.id;
     }
   }, [note, reset]);
+
+  useEffect(() => {
+    dispatch(activeNote(formValues.id, { ...formValues }));
+  }, [formValues, dispatch]);
 
   return (
     <div className="notes__main-content">
@@ -40,19 +48,21 @@ export const NoteScreen = () => {
           className="notes_title-input"
           autoComplete="off"
           value={title}
+          name="title"
           onChange={handleInputChange}
         />
         <textarea
           placeholder="What happened today?"
           className="notes__textarea"
           value={body}
+          name="body"
           onChange={handleInputChange}
         ></textarea>
 
         {note.url && (
           <div className="notes__image">
             <img
-              src="https://www.tom-archer.com/wp-content/uploads/2018/06/milford-sound-night-fine-art-photography-new-zealand.jpg"
+              src={note.url}
               alt="Imagen"
             />
           </div>
