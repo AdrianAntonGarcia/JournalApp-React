@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react';
 import { NotesAppBar } from './NotesAppBar';
 import { useSelector, useDispatch } from 'react-redux';
 import { useForm } from '../../hooks/useForm';
-import { activeNote } from '../../actions/notes';
+import { activeNote, startDeleting } from '../../actions/notes';
 
 export const NoteScreen = () => {
   const dispatch = useDispatch();
@@ -13,7 +13,7 @@ export const NoteScreen = () => {
    * No podemos mutar el estado de forma directa!!!!
    */
   const [formValues, handleInputChange, reset] = useForm(note);
-  const { body, title } = formValues;
+  const { body, title, id } = formValues;
 
   /**
    * El note cambia cada vez que cambia el store, por lo que almacenamos el valor actual
@@ -38,6 +38,10 @@ export const NoteScreen = () => {
     dispatch(activeNote(formValues.id, { ...formValues }));
   }, [formValues, dispatch]);
 
+  const handleDelete = () => {
+    dispatch(startDeleting(id));
+  };
+
   return (
     <div className="notes__main-content">
       <NotesAppBar />
@@ -61,13 +65,13 @@ export const NoteScreen = () => {
 
         {note.url && (
           <div className="notes__image">
-            <img
-              src={note.url}
-              alt="Imagen"
-            />
+            <img src={note.url} alt="Imagen" />
           </div>
         )}
       </div>
+      <button className="btn btn-danger" onClick={handleDelete}>
+        Delete
+      </button>
     </div>
   );
 };

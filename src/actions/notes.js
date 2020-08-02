@@ -94,9 +94,30 @@ export const startUploading = (file) => {
       },
     });
     const fileUrl = await fileUpload(file);
-    activeNote.url = fileUrl;
-  
+    activeNote.url = fileUrl.secure_url;
+    activeNote.public_id = fileUrl.public_id;
+
     dispatch(startSaveNote(activeNote));
     Swal.close();
   };
 };
+
+export const startDeleting = (id) => {
+  return async (dispatch, getState) => {
+    const uid = getState().auth.uid;
+    try {
+      // Borramos de firebase
+      await db.doc(`${uid}/journal/notes/${id}`).delete();
+      // Borramos de redux
+      dispatch(deleteNote(id));
+    } catch (error) {
+      console.log(error);
+      Swal.fire('Error!', 'Error deleting note firebase', 'error');
+    }
+  };
+};
+
+export const deleteNote = (id) => ({
+  type: types.notesDelete,
+  payload: id,
+});
